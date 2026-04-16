@@ -98,12 +98,16 @@ export default class View {
     editBtn.innerHTML = '<i class="fa fa-pencil"></i>';
     editBtn.setAttribute('data-toggle', 'modal');
     editBtn.setAttribute('data-target', '#modal');
-    editBtn.onclick = () => this.modal.setValues({
-      id: todo.id,
-      title: row.children[0].innerText,
-      description: row.children[1].innerText,
-      completed: row.children[2].children[0].checked,
-    });
+    editBtn.onclick = () => {
+      const currentTodo = this.model.getTodos().find((modelTodo) => modelTodo.id === todo.id);
+      this.modal.setValues({
+        id: todo.id,
+        title: row.children[0].innerText,
+        description: row.children[1].innerText,
+        completed: row.children[2].children[0].checked,
+        due_date: currentTodo ? currentTodo.due_date : null,
+      });
+    };
     row.children[3].appendChild(editBtn);
 
     const removeBtn = document.createElement('button');
