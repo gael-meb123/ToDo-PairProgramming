@@ -9,10 +9,15 @@ export default class Model {
           title: 'Learn JS',
           description: 'Watch JS Tutorials',
           completed: false,
+          due_date: null,
         }
       ]
       this.currentId = 1;
     } else {
+      this.todos = this.todos.map((todo) => ({
+        ...todo,
+        due_date: todo.due_date || null,
+      }));
       this.currentId = this.todos[this.todos.length - 1].id + 1;
     }
   }
@@ -46,12 +51,13 @@ export default class Model {
     this.save();
   }
 
-  addTodo(title, description) {
+  addTodo(title, description, dueDateIso = null) {
     const todo = {
       id: this.currentId++,
       title,
       description,
       completed: false,
+      due_date: dueDateIso,
     }
 
     this.todos.push(todo);

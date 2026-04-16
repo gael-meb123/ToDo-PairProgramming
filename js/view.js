@@ -11,7 +11,7 @@ export default class View {
     this.filters = new Filters();
     
 
-    this.addTodoForm.onClick((title, description) => this.addTodo(title, description));
+    this.addTodoForm.onClick((title, description, dueDateIso) => this.addTodo(title, description, dueDateIso));
     this.modal.onClick((id, values) => this.editTodo(id, values));
     this.filters.onClick((filters) => this.filter(filters));
   }
@@ -51,8 +51,8 @@ export default class View {
     }
   }
 
-  addTodo(title, description) {
-    const todo = this.model.addTodo(title, description);
+  addTodo(title, description, dueDateIso = null) {
+    const todo = this.model.addTodo(title, description, dueDateIso);
     this.createRow(todo);
   }
 
