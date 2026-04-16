@@ -25,15 +25,75 @@ export default class View {
     todos.forEach((todo) => this.createRow(todo));
   }
 
+  getDueDateMeta(dueDateIso) {
+    if (!dueDateIso) {
+      return {
+        text: 'Sin fecha',
+        badgeClass: 'badge-secondary',
+        badgeLabel: 'Sin fecha',
+      };
+    }
+
+    const dueDate = new Date(dueDateIso);
+    if (Number.isNaN(dueDate.getTime())) {
+      return {
+        text: 'Sin fecha',
+        badgeClass: 'badge-secondary',
+        badgeLabel: 'Sin fecha',
+      };
+    }
+
+    const formattedDate = new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(dueDate);
+
+    const now = new Date();
+    const diffMs = dueDate.getTime() - now.getTime();
+    const next24hMs = 24 * 60 * 60 * 1000;
+
+    if (diffMs < 0) {
+      return {
+        text: formattedDate,
+        badgeClass: 'badge-danger',
+        badgeLabel: 'Vencida',
+      };
+    }
+
+    if (diffMs <= next24hMs) {
+      return {
+        text: formattedDate,
+        badgeClass: 'badge-warning',
+        badgeLabel: 'Proxima a vencer',
+      };
+    }
+
+    return {
+      text: formattedDate,
+      badgeClass: 'badge-success',
+      badgeLabel: 'Futura',
+    };
+  }
+
+  createDueDateCellContent(dueDateIso) {
+    const { text, badgeClass, badgeLabel } = this.getDueDateMeta(dueDateIso);
+    return `
+      <div>${text}</div>
+      <span class="badge ${badgeClass} mt-1">${badgeLabel}</span>
+    `;
+  }
+
   filter(filters) {
     const { type, words } = filters;
     const [, ...rows] = this.table.getElementsByTagName('tr');
     for (const row of rows) {
-      const [title, description, completed] = row.children;
+      const [title, description, dueDate, completed] = row.children;
       let shouldHide = false;
 
       if (words) {
-        shouldHide = !title.innerText.includes(words) && !description.innerText.includes(words);
+        shouldHide = !title.innerText.includes(words)
+          && !description.innerText.includes(words)
+          && !dueDate.innerText.includes(words);
       }
 
       const shouldBeCompleted = type === 'completed';
@@ -65,7 +125,8 @@ export default class View {
     const row = document.getElementById(id);
     row.children[0].innerText = values.title;
     row.children[1].innerText = values.description;
-    row.children[2].children[0].checked = values.completed;
+    row.children[2].innerHTML = this.createDueDateCellContent(values.due_date);
+    row.children[3].children[0].checked = values.completed;
   }
 
   removeTodo(id) {
@@ -74,11 +135,12 @@ export default class View {
   }
 
   createRow(todo) {
-    const row = table.insertRow();
+    const row = this.table.insertRow();
     row.setAttribute('id', todo.id);
     row.innerHTML = `
       <td>${todo.title}</td>
       <td>${todo.description}</td>
+      <td>${this.createDueDateCellContent(todo.due_date)}</td>
       <td class="text-center">
 
       </td>
@@ -91,7 +153,7 @@ export default class View {
     checkbox.type = 'checkbox';
     checkbox.checked = todo.completed;
     checkbox.onclick = () => this.toggleCompleted(todo.id);
-    row.children[2].appendChild(checkbox);
+    row.children[3].appendChild(checkbox);
 
     const editBtn = document.createElement('button');
     editBtn.classList.add('btn', 'btn-primary', 'mb-1');
@@ -104,16 +166,16 @@ export default class View {
         id: todo.id,
         title: row.children[0].innerText,
         description: row.children[1].innerText,
-        completed: row.children[2].children[0].checked,
+        completed: row.children[3].children[0].checked,
         due_date: currentTodo ? currentTodo.due_date : null,
       });
     };
-    row.children[3].appendChild(editBtn);
+    row.children[4].appendChild(editBtn);
 
     const removeBtn = document.createElement('button');
     removeBtn.classList.add('btn', 'btn-danger', 'mb-1', 'ml-1');
     removeBtn.innerHTML = '<i class="fa fa-trash"></i>';
     removeBtn.onclick = () => this.removeTodo(todo.id);
-    row.children[3].appendChild(removeBtn);
+    row.children[4].appendChild(removeBtn);
   }
 }

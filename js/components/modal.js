@@ -47,10 +47,17 @@ export default class Modal {
       const dueDateValue = this.dueDate.value;
       if (dueDateValue) {
         const selectedDate = new Date(dueDateValue);
+        if (Number.isNaN(selectedDate.getTime())) {
+          this.alert.show('Due date is invalid');
+          return;
+        }
+
         const selectedDateIso = selectedDate.toISOString();
         const isPreviousExpiredDate = this.originalDueDate === selectedDateIso;
+        const now = new Date();
+        now.setSeconds(0, 0);
 
-        if (selectedDate < new Date() && !isPreviousExpiredDate) {
+        if (selectedDate < now && !isPreviousExpiredDate) {
           this.alert.show('Due date cannot be earlier than the current date and time');
           return;
         }

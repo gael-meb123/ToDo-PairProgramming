@@ -1,7 +1,15 @@
 export default class Model {
   constructor() {
     this.view = null;
-    this.todos = JSON.parse(localStorage.getItem('todos'));
+    let storedTodos = null;
+    try {
+      storedTodos = JSON.parse(localStorage.getItem('todos'));
+    } catch (error) {
+      storedTodos = null;
+    }
+
+    this.todos = Array.isArray(storedTodos) ? storedTodos : null;
+
     if (!this.todos || this.todos.length < 1) {
       this.todos = [
         {
@@ -18,7 +26,11 @@ export default class Model {
         ...todo,
         due_date: todo.due_date || null,
       }));
-      this.currentId = this.todos[this.todos.length - 1].id + 1;
+      const maxId = this.todos.reduce((acc, todo) => {
+        const todoId = Number.isInteger(todo.id) ? todo.id : -1;
+        return todoId > acc ? todoId : acc;
+      }, -1);
+      this.currentId = maxId + 1;
     }
   }
 

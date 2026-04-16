@@ -3,6 +3,7 @@ import Alert from './alert.js';
 export default class AddTodo {
   constructor() {
     this.btn = document.getElementById('add');
+    this.form = this.btn.closest('form');
     this.title = document.getElementById('title');
     this.description = document.getElementById('description');
     this.dueDate = document.getElementById('due-date');
@@ -11,8 +12,15 @@ export default class AddTodo {
   }
 
   onClick(callback) {
-    this.btn.onclick = () => {
-      if (this.title.value === '' || this.description.value === '') {
+    const submit = (e) => {
+      if (e) {
+        e.preventDefault();
+      }
+
+      const titleValue = this.title.value.trim();
+      const descriptionValue = this.description.value.trim();
+
+      if (!titleValue || !descriptionValue) {
         this.alert.show('Title and description are required');
         return;
       }
@@ -20,7 +28,15 @@ export default class AddTodo {
       const dueDateValue = this.dueDate.value;
       if (dueDateValue) {
         const selectedDate = new Date(dueDateValue);
-        if (selectedDate < new Date()) {
+        if (Number.isNaN(selectedDate.getTime())) {
+          this.alert.show('Due date is invalid');
+          return;
+        }
+
+        const now = new Date();
+        now.setSeconds(0, 0);
+
+        if (selectedDate < now) {
           this.alert.show('Due date cannot be earlier than the current date and time');
           return;
         }
@@ -29,7 +45,17 @@ export default class AddTodo {
       this.alert.hide();
 
       const dueDateIso = dueDateValue ? new Date(dueDateValue).toISOString() : null;
-      callback(this.title.value, this.description.value, dueDateIso);
+      callback(titleValue, descriptionValue, dueDateIso);
+
+      this.title.value = '';
+      this.description.value = '';
+      this.dueDate.value = '';
+      this.title.focus();
+    };
+
+    this.btn.onclick = submit;
+    if (this.form) {
+      this.form.onsubmit = submit;
     }
   }
 }
