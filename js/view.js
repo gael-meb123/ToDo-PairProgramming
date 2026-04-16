@@ -28,6 +28,7 @@ export default class View {
   getDueDateMeta(dueDateIso) {
     if (!dueDateIso) {
       return {
+        status: 'none',
         text: 'Sin fecha',
         badgeClass: 'badge-secondary',
         badgeLabel: 'Sin fecha',
@@ -37,6 +38,7 @@ export default class View {
     const dueDate = new Date(dueDateIso);
     if (Number.isNaN(dueDate.getTime())) {
       return {
+        status: 'none',
         text: 'Sin fecha',
         badgeClass: 'badge-secondary',
         badgeLabel: 'Sin fecha',
@@ -54,6 +56,7 @@ export default class View {
 
     if (diffMs < 0) {
       return {
+        status: 'overdue',
         text: formattedDate,
         badgeClass: 'badge-danger',
         badgeLabel: 'Vencida',
@@ -62,6 +65,7 @@ export default class View {
 
     if (diffMs <= next24hMs) {
       return {
+        status: 'soon',
         text: formattedDate,
         badgeClass: 'badge-warning',
         badgeLabel: 'Proxima a vencer',
@@ -69,6 +73,7 @@ export default class View {
     }
 
     return {
+      status: 'future',
       text: formattedDate,
       badgeClass: 'badge-success',
       badgeLabel: 'Futura',
@@ -84,7 +89,7 @@ export default class View {
   }
 
   filter(filters) {
-    const { type, words } = filters;
+    const { type, dueStatus, words } = filters;
     const [, ...rows] = this.table.getElementsByTagName('tr');
     for (const row of rows) {
       const [title, description, dueDate, completed] = row.children;
@@ -100,6 +105,11 @@ export default class View {
       const isCompleted = completed.children[0].checked;
 
       if (type !== 'all' && shouldBeCompleted !== isCompleted) {
+        shouldHide = true;
+      }
+
+      const rowDueStatus = this.getDueDateMeta(row.dataset.dueDateIso || null).status;
+      if (dueStatus !== 'all' && rowDueStatus !== dueStatus) {
         shouldHide = true;
       }
 
@@ -123,6 +133,7 @@ export default class View {
   editTodo(id, values) {
     this.model.editTodo(id, values);
     const row = document.getElementById(id);
+    row.dataset.dueDateIso = values.due_date || '';
     row.children[0].innerText = values.title;
     row.children[1].innerText = values.description;
     row.children[2].innerHTML = this.createDueDateCellContent(values.due_date);
@@ -137,6 +148,7 @@ export default class View {
   createRow(todo) {
     const row = this.table.insertRow();
     row.setAttribute('id', todo.id);
+    row.dataset.dueDateIso = todo.due_date || '';
     row.innerHTML = `
       <td>${todo.title}</td>
       <td>${todo.description}</td>

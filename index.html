@@ -41,12 +41,16 @@
       </ul>
       <form class="form-inline my-2 my-lg-0" id="filters">
         <label class="font-weight-bold text-info mr-3">Filters</label>
-        <input type="radio" name="type" value="all" class="mx-1">
+        <input type="radio" name="type" value="all" class="mx-1" checked>
         <label for="male" class="mb-0">All</label>
         <input type="radio" name="type" value="completed" class="mx-1">
         <label for="female" class="mb-0">Completed</label>
         <input type="radio" name="type" value="uncompleted" class="mx-1">
         <label for="other" class="mr-2 mb-0">Uncompleted</label> 
+
+        <select class="form-control mr-sm-2" id="due-status-filter" name="dueStatus" aria-label="Due status filter">
+          <!-- Options generated with JS -->
+        </select>
 
         <input
           class="form-control mr-sm-2"
