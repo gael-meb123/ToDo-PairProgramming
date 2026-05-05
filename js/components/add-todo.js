@@ -53,7 +53,7 @@ export default class AddTodo {
       this.title.focus();
     };
 
-    this.btn.onclick = submit;
+    this.btn.onclick = null;
     if (this.form) {
       this.form.onsubmit = submit;
     }
